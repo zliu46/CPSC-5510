@@ -1,0 +1,4 @@
+#Project #2: RDT
+
+In this project, you will implement rdt3.0, the final version of the stop-and-wait approach. 
+This rdt3.0 runs in the application layer and you can choose either TCP or UDP as the underlying transport service. 
