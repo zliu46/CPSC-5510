@@ -1,0 +1,66 @@
+Project #1: Web Proxy
+
+In this project, you will use Python to develop a small web proxy server that is able to cache web pages. It is a very simple proxy server that only understands simple GET requests of html files.
+Background
+
+The web proxy sits between the web client and the web server to relay HTTP traffic. Generally, when the client makes a request, the request is sent to the web server. The web server then processes the request and sends back a response message to the requesting client. In order to improve the performance, we create a proxy server between the client and the web server. Now, both the request message sent by the client and the response message delivered by the web server pass through the proxy server. In other words, the client requests the objects via the proxy server. The proxy server will check its cache for the prior results from the same request but if it isn't found the client's request is forwarded to the web server. The web server will then generate a response message and deliver it to the proxy server, which in turn places it in its cache and sends it to the client. You should have a clear understanding of how a web proxy works before starting your implementation. You can review our textbook or find more information online.
+
+
+Requirements
+
+    Your proxy source code should be in a single .py file named proxy.py. Submit your final proxy.py file here on Canvas. Your proxy should expect a command-line argument that specifies a listening port number. Do not hard code your port number in your code. An example of execution of your proxy should be like:
+    python3 proxy.py 10001
+    Your proxy should support HTTP 1.1 and caching. Your proxy interacts with both clients and web servers over HTTP/1.1, though it only needs to support the GET method. Your proxy is capable of accepting and parsing an HTTP request. If the requested file is in the cache, the proxy will respond to the user with the cached content; otherwise, the proxy will forward the request to the original web server, cache the file sent by the server, and relay the response data to the client.
+    Listening and parsing HTTP requests. After your proxy starts, it should listen to the port and wait for incoming client TCP connections. Once a client’s connection is accepted, the proxy should receive a request from the client and then check for a properly-formatted HTTP request. Specifically, you will parse the client message to ensure that the proxy receives a request that contains a valid request line:
+
+    <METHOD> <URL> <HTTP VERSION>
+
+    In this project, the client’s requests to the proxy must be in their absolute URI form (see RFC 1945 
+
+Links to an external site., Section 5.1.2), e.g.,
+
+GET http://lundeenk.me/networks/valid.html HTTP/1.1
+
+Your proxy needs to parse the requested URL to retrieve three pieces of information:
+
+    the requested host,
+    port, and
+    path.
+If the hostname indicated in the absolute URL does not have a port specified, you should use the default HTTP port 80. URLs with parameters, query, or fragment are not supported.
+Respond to client appropriately:
+
+    No Cache Hit.
+
+    After parsing the URL, if there is no cache hit of the requested file, your proxy will establish a TCP connection to the requested host and send the HTTP request for the file. The proxy should always send the request in the relative URL + Host header format. For instance:
+
+    For the following request from a client:
+
+    GET http://lundeenk.me/networks/valid.html HTTP/1.1
+
+    Should generate a request from your proxy to the remote server:
+
+    GET /networks/valid.html HTTP/1.1
+    Host: lundeenk.me
+    Connection: close
+    (Additional client-specified headers, if any...)
+
+    Note that your proxy should send HTTP/1.1 flags and a Connection: close header to the web server, so that the server will close the connection after its response is fully transmitted, as opposed to keeping open a persistent connection. To add new headers or modify existing ones, do it when parsing the HTTP request.
+
+    If your proxy sends the request correctly, the remote web server will respond to the request. If the server responds with status code 200, your proxy should cache the content of the response as-is and then relay it to the client; if the server responds with status code 404, your proxy should relay this 404 message to the client; if the server responds with status code other than 200 and 404, your proxy should create a 500 'Internal Error' message and send it to the client. Since there is no cache hit in the last two scenarios, your proxy should also include a customized message field ‘Cache-Hit: 0’.
+
+    Note that you should cache the files into the relative folder ‘cache/SUBFOLDERS_AS_NEEDED’. Your proxy should be able to create such folder(s) if they do not exist. You can assume the maximum size of the requested file is 16Mb. Besides, if the HTTP request from the client is malformed or not supported or the server returned status other than 200 and 404, your proxy should return 500 'Internal Error' to the client. Only in the case of status 200 should the file be cached.
+    You can assume for this project that a valid URL cannot be both a page itself and a folder of other pagers. For example, if http://kevin.com/foo 
+
+Links to an external site. is a valid URL (status 200), then we can assume http://kevin.com/foo/garble.html
+
+    Links to an external site. could not be a valid URL. (Of course, this is not the case in reality--a typical approach on the server side is to use a special filename, index.html, to handle this.) 
+    Cache hit.
+
+    After parsing the URL, if the requested file is in the cache, your proxy will directly load the cached file and send it back to the client. Since there is a cache hit, your proxy should also include a customized message field ‘Cache-Hit: 1’. In addition, at a minimum, it should include a header for Content-Length. Normally, you'd also expect a Date header, but we'll not require that for this project (especially since you aren't allowed to import date or time libraries!).
+
+Allowed libraries. With Python, there are various solutions and libraries for a web proxy. In this project, only the following four libraries/functions are allowed. If you believe you need more libraries, post a discussion on Slack (in the main #5510s23 channel, not a direct message) and I’ll address it case by case. Using disallowed libraries will result in zero points on this assignment.
+
+from socket import * 	It’s okay to use any function in the socket lib
+from urllib.parse import urlparse 	Only this urlparse function can be used
+import sys 	For parsing argument (port number) only
+from pathlib import Path 	For folder access (creating and reading)
